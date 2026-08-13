@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const outputRoot = `${projectRoot}/dist`;
-const files = ["index.html", "styles.css", "src/game.js", "src/engine.js"];
+const files = ["index.html", "styles.css", "src/game.js", "src/engine.js", "src/timing.js"];
 
 await rm(outputRoot, { recursive: true, force: true });
 for (const file of files) {
@@ -14,7 +14,7 @@ for (const file of files) {
 
 await writeFile(
   `${outputRoot}/build.json`,
-  `${JSON.stringify({ app: "EutherShot", version: "0.2.0", builtAt: new Date().toISOString() }, null, 2)}\n`,
+  `${JSON.stringify({ app: "EutherShot", version: "0.2.1", builtAt: new Date().toISOString() }, null, 2)}\n`,
 );
 
 console.log(`Byggde EutherShot: ${files.length} webbassets i ${outputRoot}`);

@@ -8,6 +8,7 @@ import {
   resolveAttack,
   winnerFor,
 } from "../src/engine.js";
+import { readingPause } from "../src/timing.js";
 
 test("the radial menu exposes twelve office attacks", () => {
   assert.deepEqual(
@@ -85,4 +86,14 @@ test("combo damage is included in the resolved outcome", () => {
   assert.equal(withCombo.targetDamage, withoutCombo.targetDamage + 6);
   assert.equal(withCombo.selfDamage, withoutCombo.selfDamage + 2);
   assert.equal(withCombo.combo.label, "KALENDERSTORM");
+});
+
+test("dialogue timing leaves readable pauses and gives mobile a little longer", () => {
+  const line = "Du är mänsklig motsvarighet till ett möte utan agenda.";
+  const desktop = readingPause(line);
+  const mobile = readingPause(line, { compact: true });
+  assert.ok(desktop >= 2000);
+  assert.ok(mobile > desktop);
+  assert.equal(readingPause("Kort."), 1450);
+  assert.equal(readingPause("ord ".repeat(100)), 2700);
 });

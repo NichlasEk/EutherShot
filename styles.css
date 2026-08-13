@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;800&display=swap");
 
 :root {
-  color-scheme: dark;
+  color-scheme: only dark;
   font-family: Inter, Arial, sans-serif;
   --ink: #111820;
   --paper: #e7e0d0;
@@ -443,7 +443,12 @@ a:focus-visible {
   display: block;
   width: 100%;
   overflow: visible;
+  color-interpolation: sRGB;
+  color-interpolation-filters: sRGB;
+  forced-color-adjust: none;
 }
+
+.worker svg * { forced-color-adjust: none; }
 
 .worker-shadow { fill: rgba(17, 25, 26, 0.35); }
 .worker .shoe { fill: #171b1d; stroke: #0a0d0e; stroke-width: 4; }

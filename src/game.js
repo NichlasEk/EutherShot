@@ -1,8 +1,14 @@
 import { ATTACKS, applyAttack, resolveAttack, winnerFor } from "./engine.js";
+import { readingPause as calculateReadingPause } from "./timing.js";
 
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const compactViewport = window.matchMedia("(max-width: 640px)").matches;
 const pace = (milliseconds) => (reducedMotion ? Math.min(milliseconds, 80) : milliseconds);
+
+function readingPause(line, { minimum = 1450, maximum = 2700 } = {}) {
+  return calculateReadingPause(line, { minimum, maximum, compact: compactViewport });
+}
 
 const office = document.querySelector("#office");
 const controls = document.querySelector(".controls");
@@ -428,13 +434,13 @@ async function playAttack(attack) {
   const attacker = players[activePlayer];
   showSequenceLabel(outcome.combo?.label ?? (outcome.critical ? `KRITISK ${attack.label}` : attack.label));
   playUiSound();
-  await wait(pace(650));
+  await wait(pace(800));
 
   setSpeech(`${attacker.name} / ${attacker.department}`, outcome.intent);
   setPhase("windup");
-  await wait(pace(attack.id === "ai" ? 350 : 540));
+  await wait(readingPause(outcome.intent));
   setSpeech(`${attacker.name} / OPROFESSIONELLT`, outcome.insult);
-  await wait(pace(520));
+  await wait(readingPause(outcome.insult, { minimum: 1600, maximum: 2900 }));
 
   if (attack.id === "meeting") spawnInvites();
   if (attack.id === "reply") spawnMail();
@@ -452,10 +458,15 @@ async function playAttack(attack) {
 
   const impactDurations = { management: 2500, ai: 1700, offsite: 1850, printer: 1550, powerpoint: 1450 };
   const impactDuration = impactDurations[attack.id] ?? 1150;
-  await wait(pace(impactDuration));
+  const impactReadingDuration = readingPause(outcome.impact, { minimum: 1650, maximum: 2900 });
+  await wait(Math.max(pace(impactDuration), impactReadingDuration));
   setPhase("recovery");
-  if (outcome.critical || outcome.variant === 2) setSpeech("SYSTEMANOMALI", outcome.anomaly);
-  await wait(pace(650));
+  if (outcome.critical || outcome.variant === 2) {
+    setSpeech("SYSTEMANOMALI", outcome.anomaly);
+    await wait(readingPause(outcome.anomaly, { minimum: 1550, maximum: 2500 }));
+  } else {
+    await wait(pace(750));
+  }
 
   const winner = winnerFor(players);
   clearEffects();
