@@ -40,6 +40,7 @@ const resultCopy = document.querySelector("#result-copy");
 const rematchButton = document.querySelector("#rematch-button");
 const resetButton = document.querySelector("#reset-button");
 const soundToggle = document.querySelector("#sound-toggle");
+const printer = document.querySelector("#printer");
 const workers = [...document.querySelectorAll("[data-worker]")];
 const playerCards = [...document.querySelectorAll("[data-player-card]")];
 
@@ -56,6 +57,7 @@ let soundEnabled = true;
 let audioContext;
 let lastHoveredAttack = null;
 let previousAttackId = null;
+let reviewRig = null;
 
 const attackLayouts = [
   ...[202, 232, 262, 292, 322, 350].map((angle) => ({ angle, ring: "inner" })),
@@ -197,6 +199,79 @@ function chaosElement(className, text = "") {
   return element;
 }
 
+function clearReviewRig() {
+  if (!reviewRig) return;
+  reviewRig.arm.classList.remove("is-review-reaching");
+  reviewRig.hand.setAttribute("cx", reviewRig.handCx);
+  reviewRig.hand.setAttribute("cy", reviewRig.handCy);
+  reviewRig.arm.querySelectorAll(".reach-upper, .reach-upper-outline, .reach-forearm, .reach-forearm-outline").forEach((path) => path.removeAttribute("d"));
+  const elbow = reviewRig.arm.querySelector(".reach-elbow");
+  elbow.removeAttribute("cx");
+  elbow.removeAttribute("cy");
+  reviewRig = null;
+}
+
+function prepareReviewRig() {
+  clearReviewRig();
+  const attackerWorker = workers[activePlayer];
+  const targetWorker = workers[activePlayer === 0 ? 1 : 0];
+  const armSelector = activePlayer === 0 ? ".arm-back" : ".arm-front";
+  const arm = attackerWorker.querySelector(armSelector);
+  const svg = attackerWorker.querySelector("svg");
+  const hand = arm.querySelector(".hand");
+  const headRect = targetWorker.querySelector(".head").getBoundingClientRect();
+  const screenPoint = svg.createSVGPoint();
+  screenPoint.x = headRect.left + headRect.width / 2;
+  screenPoint.y = headRect.top + headRect.height / 2;
+  const target = screenPoint.matrixTransform(svg.getScreenCTM().inverse());
+  const shoulderX = Number(arm.dataset.shoulderX);
+  const shoulderY = Number(arm.dataset.shoulderY);
+  const spanX = target.x - shoulderX;
+  const elbowX = shoulderX + spanX * 0.46;
+  const elbowDrop = Math.min(Math.max(Math.abs(spanX) * 0.12, 34), 62);
+  const elbowY = Math.max(shoulderY, target.y) + elbowDrop;
+  const upperCurve = `M${shoulderX} ${shoulderY} Q${shoulderX + spanX * 0.22} ${shoulderY + 52} ${elbowX} ${elbowY}`;
+  const forearmCurve = `M${elbowX} ${elbowY} Q${elbowX + spanX * 0.3} ${elbowY - 86} ${target.x} ${target.y}`;
+
+  arm.querySelectorAll(".reach-upper, .reach-upper-outline").forEach((path) => path.setAttribute("d", upperCurve));
+  arm.querySelectorAll(".reach-forearm, .reach-forearm-outline").forEach((path) => path.setAttribute("d", forearmCurve));
+  const elbow = arm.querySelector(".reach-elbow");
+  elbow.setAttribute("cx", String(elbowX));
+  elbow.setAttribute("cy", String(elbowY));
+  reviewRig = { arm, hand, handCx: hand.getAttribute("cx"), handCy: hand.getAttribute("cy") };
+  hand.setAttribute("cx", String(target.x));
+  hand.setAttribute("cy", String(target.y));
+  arm.classList.add("is-review-reaching");
+}
+
+function clearPrinterRig() {
+  printer.style.removeProperty("--printer-grab-x");
+  printer.style.removeProperty("--printer-grab-y");
+}
+
+function preparePrinterRig() {
+  clearPrinterRig();
+  const targetIndex = activePlayer === 0 ? 1 : 0;
+  const targetWorker = workers[targetIndex];
+  const printerRect = printer.getBoundingClientRect();
+  const headRect = targetWorker.querySelector(".head").getBoundingClientRect();
+  const printerCenterX = printerRect.left + printerRect.width / 2;
+  const printerCenterY = printerRect.top + printerRect.height / 2;
+  const targetX = headRect.left + headRect.width / 2;
+  const targetY = headRect.top + headRect.height / 2;
+  printer.style.setProperty("--printer-grab-x", `${targetX - printerCenterX}px`);
+  printer.style.setProperty("--printer-grab-y", `${targetY - printerCenterY}px`);
+
+  const officeRect = office.getBoundingClientRect();
+  const faceSheet = document.createElement("div");
+  faceSheet.className = `printer-face-sheet from-${targetIndex === 0 ? "left" : "right"}`;
+  faceSheet.style.left = `${targetX - officeRect.left}px`;
+  faceSheet.style.top = `${targetY - officeRect.top}px`;
+  faceSheet.style.setProperty("--face-sheet-x", targetIndex === 0 ? "180px" : "-180px");
+  faceSheet.innerHTML = `<small>UTSKRIFT // ${players[targetIndex].name}</small><i><b></b><b></b><em></em></i><strong>IDENTITET EJ FUNNEN</strong>`;
+  chaosLayer.append(faceSheet);
+}
+
 function spawnOfficeChaos(attackId, variant) {
   chaosLayer.replaceChildren();
   const direction = activePlayer === 0 ? 1 : -1;
@@ -222,7 +297,7 @@ function spawnOfficeChaos(attackId, variant) {
   }
 
   if (attackId === "printer") {
-    for (let index = 0; index < 28; index += 1) {
+    for (let index = 0; index < 16; index += 1) {
       const page = chaosElement("printer-page", index % 3 === 0 ? "KOPIA" : "");
       page.style.left = activePlayer === 0 ? "22%" : "78%";
       page.style.setProperty("--paper-x", `${direction * (170 + Math.random() * 620)}px`);
@@ -230,6 +305,7 @@ function spawnOfficeChaos(attackId, variant) {
       page.style.setProperty("--paper-delay", `${Math.random() * 0.7}s`);
       page.style.setProperty("--paper-rotate", `${-240 + Math.random() * 480}deg`);
     }
+    preparePrinterRig();
     return;
   }
 
@@ -387,7 +463,10 @@ function updateHud() {
 }
 
 function resetWorkerState() {
+  clearReviewRig();
+  clearPrinterRig();
   workers.forEach((worker) => worker.classList.remove("is-attacker", "is-target"));
+  office.classList.remove("is-review-clinch");
   office.classList.remove("is-sequencing");
   office.classList.remove("is-critical");
   office.removeAttribute("data-attack");
@@ -415,6 +494,7 @@ function setWorkerRoles() {
   office.style.setProperty("--target-rotate", `${direction * 8}deg`);
   office.style.setProperty("--target-mid-rotate", `${direction * -4}deg`);
   office.style.setProperty("--target-end-rotate", `${direction * 2}deg`);
+  office.style.setProperty("--review-target-x", `${direction * -34}px`);
 }
 
 async function playAttack(attack) {
@@ -447,16 +527,33 @@ async function playAttack(attack) {
   if (attack.id === "ai") await runAiPrelude();
   spawnOfficeChaos(attack.id, outcome.variant);
 
+  if (attack.id === "review") {
+    office.classList.add("is-review-clinch");
+    await wait(pace(760));
+    prepareReviewRig();
+  }
+
   setPhase("impact");
-  playImpactSound(attack.id);
-  spawnParticles(attack.id === "reply" || attack.id === "ai" ? 30 : 18);
-  spawnBlood(outcome);
+  const emitImpactDebris = () => {
+    spawnParticles(attack.id === "reply" || attack.id === "ai" ? 30 : 18);
+    spawnBlood(outcome);
+  };
+  if (attack.id === "review") {
+    setTimeout(() => playImpactSound(attack.id), pace(920));
+    setTimeout(emitImpactDebris, pace(980));
+  } else if (attack.id === "printer") {
+    setTimeout(() => playImpactSound(attack.id), pace(820));
+    setTimeout(emitImpactDebris, pace(900));
+  } else {
+    playImpactSound(attack.id);
+    emitImpactDebris();
+  }
   players = applyAttack(players, activePlayer, outcome);
   updateHud();
   showDamage(outcome.targetDamage, outcome.selfDamage);
   setSpeech(outcome.critical ? "KRITISK FEEDBACK" : outcome.combo ? `COMBO // ${outcome.combo.label}` : "KONSEKVENS", outcome.impact);
 
-  const impactDurations = { management: 2500, ai: 1700, offsite: 1850, printer: 1550, powerpoint: 1450 };
+  const impactDurations = { management: 2500, ai: 1700, offsite: 1850, printer: 2750, powerpoint: 1450, review: 2550 };
   const impactDuration = impactDurations[attack.id] ?? 1150;
   const impactReadingDuration = readingPause(outcome.impact, { minimum: 1650, maximum: 2900 });
   await wait(Math.max(pace(impactDuration), impactReadingDuration));
@@ -582,9 +679,19 @@ if (previewSceneAttack) {
   locked = true;
   office.dataset.attack = previewSceneAttack.id;
   office.dataset.variant = "1";
-  office.classList.add("is-sequencing", "is-impact", "is-critical");
+  office.classList.add("is-sequencing", "is-critical");
   setWorkerRoles();
   spawnOfficeChaos(previewSceneAttack.id, 1);
-  spawnBlood({ attackId: previewSceneAttack.id, critical: true });
+  if (previewSceneAttack.id === "review") {
+    office.classList.add("is-review-clinch");
+    setTimeout(() => {
+      prepareReviewRig();
+      office.classList.add("is-impact");
+      spawnBlood({ attackId: previewSceneAttack.id, critical: true });
+    }, pace(760));
+  } else {
+    office.classList.add("is-impact");
+    spawnBlood({ attackId: previewSceneAttack.id, critical: true });
+  }
   setSpeech("SEKVENSFÖRHANDSGRANSKNING", previewSceneAttack.short);
 }
