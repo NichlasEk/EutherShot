@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#111c24" />
+    <meta
+      name="description"
+      content="EutherShot: en kort, kaotisk kontorsduell för två spelare."
+    />
+    <title>EutherShot — Take Your Best Shot: 2026</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="game-shell" id="game-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="EutherShot, startsida">
+          <span class="brand-kicker">EUTHER</span><span class="brand-shot">SHOT</span>
+          <span class="brand-year">2026</span>
+        </a>
+        <div class="round-readout" aria-label="Matchstatus">
+          <span>ÄRENDE</span>
+          <strong id="case-number">ES-2026-041</strong>
+          <i aria-hidden="true"></i>
+          <span id="turn-label">MIRA HAR ORDET</span>
+        </div>
+        <button class="icon-button" id="sound-toggle" type="button" aria-pressed="true" title="Ljud på/av">
+          <span aria-hidden="true">◖))</span><span class="sr-only">Stäng av ljud</span>
+        </button>
+      </header>
+
+      <section class="hud" aria-label="Spelarnas fattning">
+        <article class="player-card player-card-left is-active" data-player-card="0">
+          <div class="player-title"><span>PRODUKT</span><strong>MIRA</strong></div>
+          <div class="composure-track" role="meter" aria-label="Miras fattning" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <span class="composure-fill"></span>
+          </div>
+          <div class="composure-meta"><span>COMPOSURE</span><b>100</b></div>
+        </article>
+        <div class="versus" aria-hidden="true"><span>Q</span><strong>VS</strong><span>4</span></div>
+        <article class="player-card player-card-right" data-player-card="1">
+          <div class="player-title"><span>DRIFT</span><strong>JENS</strong></div>
+          <div class="composure-track" role="meter" aria-label="Jens fattning" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <span class="composure-fill"></span>
+          </div>
+          <div class="composure-meta"><span>COMPOSURE</span><b>100</b></div>
+        </article>
+      </section>
+
+      <section class="office" id="office" aria-label="Kontorsduell">
+        <div class="cinema-frame" aria-hidden="true"><span>SEKVENS // LIVE</span><i>REC</i></div>
+        <div class="office-wall" aria-hidden="true">
+          <div class="window window-one"><i></i><i></i><i></i><i></i></div>
+          <div class="window window-two"><i></i><i></i><i></i><i></i></div>
+          <div class="fluorescent fluorescent-one"></div>
+          <div class="fluorescent fluorescent-two"></div>
+          <div class="wall-clock"><span></span><i></i></div>
+          <div class="policy-poster"><b>VÅRA VÄRDERINGAR</b><span>MOD</span><span>TYDLIGHET</span><span>MER SYNERGI</span></div>
+        </div>
+
+        <div class="alarm" id="alarm" aria-hidden="true"><i></i><span>BRANDLARM</span></div>
+        <div class="sprinkler-rain" aria-hidden="true"></div>
+
+        <div class="boss" id="boss" aria-hidden="true">
+          <div class="boss-head"><i></i><i></i><b></b></div>
+          <div class="boss-body"><span></span></div>
+          <p>…är det här mitt möte?</p>
+        </div>
+
+        <div class="worker worker-left" data-worker="0" aria-label="Mira från produkt">
+          <svg viewBox="0 0 220 390" role="img" aria-hidden="true">
+            <ellipse class="worker-shadow" cx="110" cy="372" rx="64" ry="10" />
+            <g class="legs">
+              <path class="shoe" d="M75 340c5 0 20 11 19 19-15 7-43 7-51 0 1-8 18-20 32-19Z" />
+              <path class="shoe" d="M141 340c13 0 31 10 33 19-9 7-37 7-52 0-1-8 14-19 19-19Z" />
+              <path class="trouser" d="M68 223h43l-19 125H57Z" />
+              <path class="trouser" d="M109 223h43l13 125h-36Z" />
+            </g>
+            <g class="body">
+              <path class="shirt" d="M69 114c27-16 57-16 84 0l20 125c-42 18-84 18-126 0Z" />
+              <path class="jacket" d="M67 114c12-8 22-11 36-14l8 138-64 1Zm86 0c-12-8-23-11-37-14l-5 138 62 1Z" />
+              <path class="lapel" d="m85 108 22 23-15 36-23-50Zm51 0-21 23 13 36 28-50Z" />
+              <path class="tie" d="m107 117 10 0 7 15-11 15-12-15Z" />
+              <path class="tie tie-long" d="m113 145 11 55-13 18-10-18Z" />
+            </g>
+            <g class="arm arm-back">
+              <path class="sleeve" d="M156 122c19 9 31 39 34 69l-26 6-30-60Z" />
+              <circle class="hand" cx="177" cy="202" r="15" />
+            </g>
+            <g class="arm arm-front">
+              <path class="sleeve" d="M65 123c-21 12-30 43-29 73l27 2 25-64Z" />
+              <circle class="hand" cx="49" cy="207" r="15" />
+            </g>
+            <g class="head">
+              <path class="neck" d="M89 100h43l-4 25H93Z" />
+              <path class="face" d="M71 43c8-33 76-37 84 6 6 36-11 67-42 68-35 1-50-36-42-74Z" />
+              <path class="hair" d="M70 50C66 13 139 4 155 37c-26-12-50 2-73-6-4 9-5 14-12 19Z" />
+              <path class="nose" d="M110 58c12 9 17 19 12 27l-17 2" />
+              <path class="brow brow-left" d="m82 55 19-3" />
+              <path class="brow brow-right" d="m125 53 17 4" />
+              <circle class="eye eye-left" cx="94" cy="63" r="3" />
+              <circle class="eye eye-right" cx="132" cy="64" r="3" />
+              <path class="mouth" d="M99 97c9 3 19 3 28-1" />
+            </g>
+          </svg>
+          <span class="name-tag">MIRA / PRODUKT</span>
+        </div>
+
+        <div class="worker worker-right" data-worker="1" aria-label="Jens från drift">
+          <svg viewBox="0 0 220 390" role="img" aria-hidden="true">
+            <ellipse class="worker-shadow" cx="110" cy="372" rx="64" ry="10" />
+            <g class="legs">
+              <path class="shoe" d="M75 340c5 0 20 11 19 19-15 7-43 7-51 0 1-8 18-20 32-19Z" />
+              <path class="shoe" d="M141 340c13 0 31 10 33 19-9 7-37 7-52 0-1-8 14-19 19-19Z" />
+              <path class="trouser" d="M68 223h43l-19 125H57Z" />
+              <path class="trouser" d="M109 223h43l13 125h-36Z" />
+            </g>
+            <g class="body">
+              <path class="shirt" d="M69 114c27-16 57-16 84 0l20 125c-42 18-84 18-126 0Z" />
+              <path class="jacket" d="M67 114c12-8 22-11 36-14l8 138-64 1Zm86 0c-12-8-23-11-37-14l-5 138 62 1Z" />
+              <path class="lapel" d="m85 108 22 23-15 36-23-50Zm51 0-21 23 13 36 28-50Z" />
+              <path class="tie" d="m107 117 10 0 7 15-11 15-12-15Z" />
+              <path class="tie tie-long" d="m113 145 11 55-13 18-10-18Z" />
+            </g>
+            <g class="arm arm-back">
+              <path class="sleeve" d="M156 122c19 9 31 39 34 69l-26 6-30-60Z" />
+              <circle class="hand" cx="177" cy="202" r="15" />
+            </g>
+            <g class="arm arm-front">
+              <path class="sleeve" d="M65 123c-21 12-30 43-29 73l27 2 25-64Z" />
+              <circle class="hand" cx="49" cy="207" r="15" />
+            </g>
+            <g class="head">
+              <path class="neck" d="M89 100h43l-4 25H93Z" />
+              <path class="face" d="M70 43c8-33 76-37 85 6 6 36-11 67-42 68-35 1-51-36-43-74Z" />
+              <path class="hair" d="M70 50C66 13 139 4 155 37c-20-8-46-8-73-6-4 9-5 14-12 19Z" />
+              <path class="glasses" d="M78 57h28v17H80Zm42 0h28l-2 17h-26Zm-14 5h14" />
+              <path class="nose" d="M112 63c11 8 13 17 7 24l-14 1" />
+              <circle class="eye eye-left" cx="96" cy="64" r="2.5" />
+              <circle class="eye eye-right" cx="134" cy="64" r="2.5" />
+              <path class="mouth" d="M99 98c11-2 20-2 29 1" />
+              <path class="moustache" d="M103 92c7-6 12-5 16 0 5-5 10-5 15 1-12 6-22 6-31-1Z" />
+            </g>
+          </svg>
+          <span class="name-tag">JENS / DRIFT</span>
+        </div>
+
+        <div class="desk" aria-label="Bord med laptop, kaffe, HR-handbok, Jira och skrivare">
+          <div class="desk-top"></div>
+          <div class="desk-front"><span></span><span></span></div>
+          <div class="laptop laptop-left">
+            <div class="laptop-screen"><b>TEAMS</b><i></i><i></i><i></i><span>du är avstängd</span></div>
+            <div class="laptop-base"></div>
+          </div>
+          <div class="laptop laptop-right">
+            <div class="laptop-screen jira-screen"><b>JIRA</b><strong>384</strong><span>öppna ärenden</span></div>
+            <div class="laptop-base"></div>
+          </div>
+          <div class="coffee coffee-left"><i></i><span>KAFFE?</span></div>
+          <div class="coffee coffee-right"><i></i><span>KAFFE?</span></div>
+          <div class="hr-book"><span>HR</span><b>HANDBOK</b><small>rev. 47</small></div>
+          <div class="phone"><i></i><i></i><i></i></div>
+          <div class="printer" id="printer">
+            <div class="paper">Q3<br />STATUS</div>
+            <div class="printer-top"></div>
+            <div class="printer-face"><i></i><b>TONER<br />KRITISKT LÅG</b><span></span></div>
+          </div>
+          <div class="ai-agent" id="ai-agent"><i></i><b>AGENT</b><span>ADMIN</span></div>
+        </div>
+
+        <div class="email-swarm" id="email-swarm" aria-hidden="true"></div>
+        <div class="calendar-swarm" id="calendar-swarm" aria-hidden="true"></div>
+        <div class="blood-layer" id="blood-layer" aria-hidden="true"></div>
+        <div class="impact-flash" id="impact-flash" aria-hidden="true"></div>
+        <div class="particles" id="particles" aria-hidden="true"></div>
+
+        <div class="speech" id="speech" aria-live="polite">
+          <span id="speech-author">SYSTEM</span>
+          <strong id="speech-line">Välj den professionella vägen framåt.</strong>
+        </div>
+
+        <div class="damage-number" id="damage-number" aria-hidden="true"></div>
+        <div class="sequence-label" id="sequence-label" aria-hidden="true"></div>
+        <div class="ai-terminal" id="ai-terminal" aria-hidden="true">
+          <div><i></i><i></i><i></i><b>EUTHER AGENT // ROOT</b></div>
+          <code id="ai-log"></code>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="Attackval">
+        <div class="attack-detail" id="attack-detail">
+          <span>NÄSTA ÅTGÄRD</span>
+          <strong id="selected-name">VÄLJ I RADIALMENYN</strong>
+          <p id="selected-description">Sex helt professionella sätt att lösa situationen.</p>
+        </div>
+        <div class="radial" id="radial">
+          <div class="radial-orbit" aria-hidden="true"></div>
+          <button class="radial-center" id="radial-center" type="button" aria-expanded="true">
+            <span>VÄLJ</span><strong>ATTACK</strong><i></i>
+          </button>
+          <div class="attack-options" id="attack-options"></div>
+        </div>
+        <div class="control-hints">
+          <span><kbd>1–6</kbd> välj</span>
+          <span><kbd>M</kbd> ljud</span>
+          <button id="reset-button" type="button"><kbd>R</kbd> nytt ärende</button>
+        </div>
+      </section>
+    </main>
+
+    <section class="start-screen" id="start-screen" aria-labelledby="start-title">
+      <div class="start-grid"></div>
+      <div class="start-card">
+        <div class="start-eyebrow"><span>7TH FLOOR PRESENTS</span><i></i><b>FY26</b></div>
+        <h1 id="start-title"><span>TAKE YOUR</span><strong>BEST SHOT</strong><em>2026</em></h1>
+        <p>En kontorskonflikt för två personer som borde ha tagit en promenad.</p>
+        <div class="start-players">
+          <span><b>P1</b> MIRA / PRODUKT</span><i>VS</i><span><b>P2</b> JENS / DRIFT</span>
+        </div>
+        <button id="start-button" type="button"><span>ÖPPNA ÄRENDET</span><i>ENTER</i></button>
+        <small>Innehåller passiv aggressivitet, kalenderinbjudningar och en felkonfigurerad AI-agent.</small>
+      </div>
+    </section>
+
+    <section class="result-screen" id="result-screen" hidden aria-labelledby="result-title">
+      <div class="result-card">
+        <span>HR SLUTBEDÖMNING</span>
+        <h2 id="result-title">ÄRENDET ÄR LÖST</h2>
+        <p id="result-copy"></p>
+        <div class="result-stamp">PROFESSIONELLT<br />TVEKSAMT</div>
+        <button id="rematch-button" type="button">NYTT ÄRENDE <i>R</i></button>
+      </div>
+    </section>
+
+    <script type="module" src="./src/game.js"></script>
+  </body>
+</html>

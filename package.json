@@ -1,0 +1,12 @@
+{
+  "name": "euthershot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs",
+    "test": "node --test",
+    "check": "node --check src/game.js && node --check src/engine.js && node --check scripts/serve.mjs && node --test"
+  }
+}
