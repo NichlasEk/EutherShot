@@ -36,6 +36,18 @@ inte styra DOM, server eller fysik direkt och ska aldrig ha adminrättigheter.
 - AI: snabb exekvering, fullständigt missförstådd behörighetsmodell.
 - Den verkliga antagonisten: skrivaren.
 
+## Chaos pass 01
+
+Den utökade prototypen har tolv attacker i två radialringar. Jira blir en fysisk
+lavin, PowerPoint kan konvertera en människa till cirkeldiagram, skrivaren kräver
+offergåvor, ett performance review kalibrerar kroppen till golvnivå,
+teambuildingbussen kör genom väggen och HR-handboken fungerar som kanon.
+
+Varje attack väljer en av tre visuella varianter, en situationsreplik, en separat
+förolämpning och en konsekvens. Kritiska träffar ger extra skada och splatter.
+Vissa attackföljder bildar namngivna kombinationer, exempelvis Meeting följt av
+Reply All (`KALENDERSTORM`) och Printer följt av AI (`ADMIN SINGULARITY`).
+
 ## Visuell riktning
 
 Egen grafisk identitet: varm pappersstruktur, kalla skärmar, hårda kontorslinjer

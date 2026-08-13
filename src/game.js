@@ -20,6 +20,7 @@ const damageNumber = document.querySelector("#damage-number");
 const particles = document.querySelector("#particles");
 const emailSwarm = document.querySelector("#email-swarm");
 const calendarSwarm = document.querySelector("#calendar-swarm");
+const chaosLayer = document.querySelector("#chaos-layer");
 const bloodLayer = document.querySelector("#blood-layer");
 const aiTerminal = document.querySelector("#ai-terminal");
 const aiLog = document.querySelector("#ai-log");
@@ -48,17 +49,22 @@ let gameOver = false;
 let soundEnabled = true;
 let audioContext;
 let lastHoveredAttack = null;
+let previousAttackId = null;
 
-const attackAngles = [188, 218, 248, 278, 308, 338];
+const attackLayouts = [
+  ...[202, 232, 262, 292, 322, 350].map((angle) => ({ angle, ring: "inner" })),
+  ...[184, 216, 248, 280, 312, 344].map((angle) => ({ angle, ring: "outer" })),
+];
 
 function buildAttackMenu() {
   ATTACKS.forEach((attack, index) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "attack-button";
+    const layout = attackLayouts[index];
+    button.className = `attack-button is-${layout.ring}`;
     button.dataset.attack = attack.id;
-    button.style.setProperty("--angle", `${attackAngles[index]}deg`);
-    button.style.setProperty("--counter-angle", `${-attackAngles[index]}deg`);
+    button.style.setProperty("--angle", `${layout.angle}deg`);
+    button.style.setProperty("--counter-angle", `${-layout.angle}deg`);
     button.style.setProperty("--item-color", attack.color);
     button.setAttribute("aria-label", `${attack.key}: ${attack.label}. ${attack.short}`);
     button.innerHTML = `<b>${attack.icon}</b><small>${attack.key}</small>`;
@@ -123,7 +129,7 @@ function spawnParticles(count = 18) {
   }
 }
 
-function spawnBlood(attackId) {
+function spawnBlood(outcome) {
   const amounts = {
     passive: 7,
     meeting: 11,
@@ -131,9 +137,16 @@ function spawnBlood(attackId) {
     synergy: 20,
     management: 5,
     ai: 26,
+    jira: 21,
+    powerpoint: 17,
+    printer: 32,
+    review: 15,
+    offsite: 38,
+    policy: 29,
   };
+  const { attackId } = outcome;
   const sides = attackId === "synergy" ? [0, 1] : [activePlayer === 0 ? 1 : 0];
-  const total = amounts[attackId] ?? 12;
+  const total = Math.round((amounts[attackId] ?? 12) * (outcome.critical ? 1.65 : 1));
 
   sides.forEach((side) => {
     workers[side].classList.add("is-bloodied");
@@ -152,7 +165,7 @@ function spawnBlood(attackId) {
       setTimeout(() => drop.remove(), pace(1100));
     }
 
-    const splatCount = attackId === "ai" ? 5 : attackId === "management" ? 1 : 3;
+    const splatCount = outcome.critical ? 7 : attackId === "ai" ? 5 : attackId === "management" ? 1 : 3;
     for (let index = 0; index < splatCount; index += 1) {
       const splat = document.createElement("i");
       splat.className = "blood-splat";
@@ -167,6 +180,90 @@ function spawnBlood(attackId) {
 
   while (bloodLayer.querySelectorAll(".blood-splat").length > 36) {
     bloodLayer.querySelector(".blood-splat")?.remove();
+  }
+}
+
+function chaosElement(className, text = "") {
+  const element = document.createElement("i");
+  element.className = className;
+  element.textContent = text;
+  chaosLayer.append(element);
+  return element;
+}
+
+function spawnOfficeChaos(attackId, variant) {
+  chaosLayer.replaceChildren();
+  const direction = activePlayer === 0 ? 1 : -1;
+
+  if (attackId === "jira") {
+    const labels = ["BLOCKED", "TODO", "P0", "89 SP", "WON'T FIX", "NEEDS INFO"];
+    for (let index = 0; index < 30; index += 1) {
+      const card = chaosElement("jira-card", labels[index % labels.length]);
+      card.style.setProperty("--jira-x", `${-270 + Math.random() * 540}px`);
+      card.style.setProperty("--jira-rotate", `${-35 + Math.random() * 70}deg`);
+      card.style.setProperty("--jira-delay", `${Math.random() * 0.55}s`);
+      card.style.setProperty("--jira-scale", `${0.7 + Math.random() * 0.7}`);
+    }
+    return;
+  }
+
+  if (attackId === "powerpoint") {
+    const slide = document.createElement("div");
+    slide.className = "powerpoint-doom";
+    slide.innerHTML = `<header>STRATEGISK RIKTNING <b>${94 + variant * 31} / 187</b></header><div class="doom-chart"><i></i><i></i><i></i></div><strong>${["Q4 MÄNNISKOVÄRDE", "SYNERGY FORECAST", "RESOURCE REALIGNMENT"][variant]}</strong><small>Data source: magkänsla</small>`;
+    chaosLayer.append(slide);
+    return;
+  }
+
+  if (attackId === "printer") {
+    for (let index = 0; index < 28; index += 1) {
+      const page = chaosElement("printer-page", index % 3 === 0 ? "KOPIA" : "");
+      page.style.left = activePlayer === 0 ? "22%" : "78%";
+      page.style.setProperty("--paper-x", `${direction * (170 + Math.random() * 620)}px`);
+      page.style.setProperty("--paper-y", `${-230 + Math.random() * 430}px`);
+      page.style.setProperty("--paper-delay", `${Math.random() * 0.7}s`);
+      page.style.setProperty("--paper-rotate", `${-240 + Math.random() * 480}deg`);
+    }
+    return;
+  }
+
+  if (attackId === "review") {
+    const stamp = document.createElement("div");
+    stamp.className = "review-stamp";
+    stamp.innerHTML = `<span>${["BEHÖVER FÖRBÄTTRAS", "EJ KALIBRERBAR", "POTENTIAL: ARKIVERAD"][variant]}</span><small>People & Culture</small>`;
+    chaosLayer.append(stamp);
+    return;
+  }
+
+  if (attackId === "offsite") {
+    const bus = document.createElement("div");
+    bus.className = `team-bus from-${activePlayer === 0 ? "left" : "right"}`;
+    bus.innerHTML = `<b>OBLIGATORISKT KUL</b><span><i></i><i></i><i></i><i></i></span><small>OFFSITE OR BUST</small>`;
+    chaosLayer.append(bus);
+    return;
+  }
+
+  if (attackId === "policy") {
+    const cannon = document.createElement("div");
+    cannon.className = `policy-cannon from-${activePlayer === 0 ? "left" : "right"}`;
+    cannon.innerHTML = `<b>HR</b><span>§47</span>`;
+    chaosLayer.append(cannon);
+    for (let index = 0; index < 18; index += 1) {
+      const clause = chaosElement("policy-clause", ["SAMTYCKE", "BILAGA 9", "GODKÄND", "SE §47"][index % 4]);
+      clause.style.setProperty("--clause-x", `${direction * (120 + Math.random() * 520)}px`);
+      clause.style.setProperty("--clause-y", `${-170 + Math.random() * 340}px`);
+      clause.style.setProperty("--clause-delay", `${Math.random() * 0.45}s`);
+    }
+    return;
+  }
+
+  if (attackId === "passive") {
+    for (let index = 0; index < 9; index += 1) {
+      const blade = chaosElement("memo-blade", ["VÄNLIGEN", "TIDIGARE", "ÅTERKOPPLA"][index % 3]);
+      blade.style.setProperty("--memo-y", `${12 + Math.random() * 64}%`);
+      blade.style.setProperty("--memo-delay", `${Math.random() * 0.5}s`);
+      blade.classList.add(`from-${activePlayer === 0 ? "left" : "right"}`);
+    }
   }
 }
 
@@ -206,6 +303,7 @@ function clearEffects() {
   particles.replaceChildren();
   emailSwarm.replaceChildren();
   calendarSwarm.replaceChildren();
+  chaosLayer.replaceChildren();
   aiTerminal.classList.remove("is-visible");
   aiTerminal.setAttribute("aria-hidden", "true");
   aiLog.textContent = "";
@@ -285,7 +383,9 @@ function updateHud() {
 function resetWorkerState() {
   workers.forEach((worker) => worker.classList.remove("is-attacker", "is-target"));
   office.classList.remove("is-sequencing");
+  office.classList.remove("is-critical");
   office.removeAttribute("data-attack");
+  office.removeAttribute("data-variant");
   setPhase(null);
 }
 
@@ -301,6 +401,9 @@ function setWorkerRoles() {
   office.style.setProperty("--strike-end-x", `${direction * 38}px`);
   office.style.setProperty("--strike-rotate", `${direction * 4}deg`);
   office.style.setProperty("--target-x", `${direction * 45}px`);
+  office.style.setProperty("--target-double-x", `${direction * 90}px`);
+  office.style.setProperty("--target-triple-x", `${direction * 158}px`);
+  office.style.setProperty("--target-quad-x", `${direction * 180}px`);
   office.style.setProperty("--target-mid-x", `${direction * 30}px`);
   office.style.setProperty("--target-end-x", `${direction * 38}px`);
   office.style.setProperty("--target-rotate", `${direction * 8}deg`);
@@ -319,33 +422,39 @@ async function playAttack(attack) {
   office.classList.add("is-sequencing");
   setWorkerRoles();
 
-  const outcome = resolveAttack(attack);
+  const outcome = resolveAttack(attack, Math.random, previousAttackId);
+  office.dataset.variant = String(outcome.variant);
+  office.classList.toggle("is-critical", outcome.critical);
   const attacker = players[activePlayer];
-  const target = players[activePlayer === 0 ? 1 : 0];
-  showSequenceLabel(attack.label);
+  showSequenceLabel(outcome.combo?.label ?? (outcome.critical ? `KRITISK ${attack.label}` : attack.label));
   playUiSound();
   await wait(pace(650));
 
   setSpeech(`${attacker.name} / ${attacker.department}`, outcome.intent);
   setPhase("windup");
-  await wait(pace(attack.id === "ai" ? 350 : 700));
+  await wait(pace(attack.id === "ai" ? 350 : 540));
+  setSpeech(`${attacker.name} / OPROFESSIONELLT`, outcome.insult);
+  await wait(pace(520));
 
   if (attack.id === "meeting") spawnInvites();
   if (attack.id === "reply") spawnMail();
   if (attack.id === "ai") await runAiPrelude();
+  spawnOfficeChaos(attack.id, outcome.variant);
 
   setPhase("impact");
   playImpactSound(attack.id);
   spawnParticles(attack.id === "reply" || attack.id === "ai" ? 30 : 18);
-  spawnBlood(attack.id);
+  spawnBlood(outcome);
   players = applyAttack(players, activePlayer, outcome);
   updateHud();
   showDamage(outcome.targetDamage, outcome.selfDamage);
-  setSpeech("KONSEKVENS", outcome.impact);
+  setSpeech(outcome.critical ? "KRITISK FEEDBACK" : outcome.combo ? `COMBO // ${outcome.combo.label}` : "KONSEKVENS", outcome.impact);
 
-  const impactDuration = attack.id === "management" ? 2500 : attack.id === "ai" ? 1700 : 1050;
+  const impactDurations = { management: 2500, ai: 1700, offsite: 1850, printer: 1550, powerpoint: 1450 };
+  const impactDuration = impactDurations[attack.id] ?? 1150;
   await wait(pace(impactDuration));
   setPhase("recovery");
+  if (outcome.critical || outcome.variant === 2) setSpeech("SYSTEMANOMALI", outcome.anomaly);
   await wait(pace(650));
 
   const winner = winnerFor(players);
@@ -356,6 +465,7 @@ async function playAttack(attack) {
     return;
   }
 
+  previousAttackId = attack.id;
   activePlayer = activePlayer === 0 ? 1 : 0;
   updateHud();
   setSpeech("SYSTEM", `${players[activePlayer].name}, välj den professionella vägen framåt.`);
@@ -393,6 +503,7 @@ function newGame({ hideStart = true } = {}) {
   activePlayer = Math.random() < 0.5 ? 0 : 1;
   locked = false;
   gameOver = false;
+  previousAttackId = null;
   resultScreen.hidden = true;
   clearEffects();
   bloodLayer.replaceChildren();
@@ -405,7 +516,7 @@ function newGame({ hideStart = true } = {}) {
   updateHud();
   setSpeech("SYSTEM", `${players[activePlayer].name} har ordet. Välj en åtgärd.`);
   selectedName.textContent = "VÄLJ I RADIALMENYN";
-  selectedDescription.textContent = "Sex helt professionella sätt att lösa situationen.";
+  selectedDescription.textContent = "Tolv helt professionella sätt att lösa situationen.";
   document.documentElement.style.setProperty("--attack", activePlayer === 0 ? "#ffd166" : "#f4a261");
   if (hideStart) startScreen.classList.add("is-hidden");
 }
@@ -445,11 +556,24 @@ window.addEventListener("keydown", (event) => {
     newGame();
     return;
   }
-  const attack = ATTACKS.find((item) => item.key === event.key);
+  const attack = ATTACKS.find((item) => item.key === event.key.toLowerCase());
   if (attack && startScreen.classList.contains("is-hidden")) void playAttack(attack);
 });
 
 buildAttackMenu();
-const skipIntro = new URLSearchParams(window.location.search).has("play");
+const launchParams = new URLSearchParams(window.location.search);
+const skipIntro = launchParams.has("play") || launchParams.has("preview");
 if (skipIntro) startScreen.hidden = true;
 newGame({ hideStart: skipIntro });
+const previewSceneAttack = ATTACKS.find((attack) => attack.id === launchParams.get("preview"));
+if (previewSceneAttack) {
+  document.body.classList.add("is-preview");
+  locked = true;
+  office.dataset.attack = previewSceneAttack.id;
+  office.dataset.variant = "1";
+  office.classList.add("is-sequencing", "is-impact", "is-critical");
+  setWorkerRoles();
+  spawnOfficeChaos(previewSceneAttack.id, 1);
+  spawnBlood({ attackId: previewSceneAttack.id, critical: true });
+  setSpeech("SEKVENSFÖRHANDSGRANSKNING", previewSceneAttack.short);
+}

@@ -4,14 +4,28 @@ import {
   ATTACKS,
   applyAttack,
   mulberry32,
+  resolveCombo,
   resolveAttack,
   winnerFor,
 } from "../src/engine.js";
 
-test("the radial menu exposes the six promised attacks", () => {
+test("the radial menu exposes twelve office attacks", () => {
   assert.deepEqual(
     ATTACKS.map((attack) => attack.id),
-    ["passive", "meeting", "reply", "synergy", "management", "ai"],
+    [
+      "passive",
+      "meeting",
+      "reply",
+      "synergy",
+      "management",
+      "ai",
+      "jira",
+      "powerpoint",
+      "printer",
+      "review",
+      "offsite",
+      "policy",
+    ],
   );
 });
 
@@ -19,8 +33,10 @@ test("attack resolution is deterministic with a seeded random source", () => {
   const first = resolveAttack(ATTACKS[2], mulberry32(2026));
   const second = resolveAttack(ATTACKS[2], mulberry32(2026));
   assert.deepEqual(first, second);
-  assert.ok(first.targetDamage >= 17 && first.targetDamage <= 24);
-  assert.ok(first.selfDamage >= 5 && first.selfDamage <= 9);
+  assert.ok(first.targetDamage >= 17 && first.targetDamage <= 30);
+  assert.ok(first.selfDamage >= 5 && first.selfDamage <= 11);
+  assert.equal(typeof first.insult, "string");
+  assert.ok(first.variant >= 0 && first.variant <= 2);
 });
 
 test("synergy damages both office workers", () => {
@@ -52,4 +68,21 @@ test("composure never becomes negative and winner is detected", () => {
 
 test("mutual collapse is a draw", () => {
   assert.equal(winnerFor([{ composure: 0 }, { composure: 0 }]), "draw");
+});
+
+test("specific consecutive attacks trigger combo bonuses", () => {
+  assert.deepEqual(resolveCombo("meeting", "reply"), {
+    label: "KALENDERSTORM",
+    bonusDamage: 6,
+    bonusRecoil: 2,
+  });
+  assert.equal(resolveCombo("reply", "meeting"), null);
+});
+
+test("combo damage is included in the resolved outcome", () => {
+  const withoutCombo = resolveAttack(ATTACKS[2], mulberry32(99));
+  const withCombo = resolveAttack(ATTACKS[2], mulberry32(99), "meeting");
+  assert.equal(withCombo.targetDamage, withoutCombo.targetDamage + 6);
+  assert.equal(withCombo.selfDamage, withoutCombo.selfDamage + 2);
+  assert.equal(withCombo.combo.label, "KALENDERSTORM");
 });

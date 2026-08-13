@@ -21,10 +21,13 @@ npm run build
 ## Vertikal slice
 
 - Lokal turordning för två spelare på samma skärm.
-- Sex attacker i radialmeny, inklusive Reply All, Synergi och AI-delegering.
-- Kombinatoriska repliker och skadeutfall, så samma val varierar.
+- Tolv attacker i två radialringar, inklusive Jira Avalanche, Printer Exorcism,
+  Mandatory Offsite och HR Policy Cannon.
+- Kritiska träffar, sex attackkombinationer och proceduraliserade anomalier.
+- Över hundra attackrepliker, förolämpningar och konsekvenser.
 - Egna responsiva SVG/CSS-figurer, kontorsrekvisita, partiklar och Web Audio-ljud.
-- Tangentbord: `1`–`6` väljer attack, `M` växlar ljud, `R` startar om.
+- Tangentbord: `1`–`9` och `Q`/`W`/`E` väljer attack, `M` växlar ljud,
+  `R` startar om.
 - Stöd för pekskärm, smal viewport och `prefers-reduced-motion`.
 
 ## Nästa produktionssteg
