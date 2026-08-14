@@ -58,6 +58,7 @@ let audioContext;
 let lastHoveredAttack = null;
 let previousAttackId = null;
 let reviewRig = null;
+let synergyRigs = [];
 
 const attackLayouts = [
   ...[202, 232, 262, 292, 322, 350].map((angle) => ({ angle, ring: "inner" })),
@@ -142,7 +143,7 @@ function spawnBlood(outcome) {
     passive: 7,
     meeting: 11,
     reply: 17,
-    synergy: 20,
+    synergy: 10,
     management: 5,
     ai: 26,
     jira: 21,
@@ -173,7 +174,7 @@ function spawnBlood(outcome) {
       setTimeout(() => drop.remove(), pace(1100));
     }
 
-    const splatCount = outcome.critical ? 7 : attackId === "ai" ? 5 : attackId === "management" ? 1 : 3;
+    const splatCount = attackId === "synergy" ? (outcome.critical ? 3 : 2) : outcome.critical ? 7 : attackId === "ai" ? 5 : attackId === "management" ? 1 : 3;
     for (let index = 0; index < splatCount; index += 1) {
       const splat = document.createElement("i");
       splat.className = "blood-splat";
@@ -209,6 +210,68 @@ function clearReviewRig() {
   elbow.removeAttribute("cx");
   elbow.removeAttribute("cy");
   reviewRig = null;
+}
+
+function clearSynergyRig() {
+  synergyRigs.forEach(({ arm, hand, handCx, handCy }) => {
+    arm.classList.remove("is-synergy-reaching");
+    hand.setAttribute("cx", handCx);
+    hand.setAttribute("cy", handCy);
+    arm.querySelectorAll(".reach-upper, .reach-upper-outline, .reach-forearm, .reach-forearm-outline").forEach((path) => path.removeAttribute("d"));
+    const elbow = arm.querySelector(".reach-elbow");
+    elbow.removeAttribute("cx");
+    elbow.removeAttribute("cy");
+  });
+  synergyRigs = [];
+}
+
+function rigArmToScreenPoint(worker, armSelector, screenX, screenY, className, bendDirection) {
+  const arm = worker.querySelector(armSelector);
+  const svg = worker.querySelector("svg");
+  const hand = arm.querySelector(".hand");
+  const screenPoint = svg.createSVGPoint();
+  screenPoint.x = screenX;
+  screenPoint.y = screenY;
+  const target = screenPoint.matrixTransform(svg.getScreenCTM().inverse());
+  const shoulderX = Number(arm.dataset.shoulderX);
+  const shoulderY = Number(arm.dataset.shoulderY);
+  const spanX = target.x - shoulderX;
+  const spanY = target.y - shoulderY;
+  const elbowX = shoulderX + spanX * 0.48;
+  const elbowY = shoulderY + spanY * 0.45 + 58;
+  const upperCurve = `M${shoulderX} ${shoulderY} Q${shoulderX + spanX * 0.2} ${shoulderY + 54} ${elbowX} ${elbowY}`;
+  const forearmCurve = `M${elbowX} ${elbowY} Q${elbowX + spanX * 0.34} ${elbowY - 72 + bendDirection * 18} ${target.x} ${target.y}`;
+
+  arm.querySelectorAll(".reach-upper, .reach-upper-outline").forEach((path) => path.setAttribute("d", upperCurve));
+  arm.querySelectorAll(".reach-forearm, .reach-forearm-outline").forEach((path) => path.setAttribute("d", forearmCurve));
+  const elbow = arm.querySelector(".reach-elbow");
+  elbow.setAttribute("cx", String(elbowX));
+  elbow.setAttribute("cy", String(elbowY));
+  const rig = { arm, hand, handCx: hand.getAttribute("cx"), handCy: hand.getAttribute("cy") };
+  hand.setAttribute("cx", String(target.x));
+  hand.setAttribute("cy", String(target.y));
+  arm.classList.add(className);
+  return rig;
+}
+
+function prepareSynergyRig() {
+  clearSynergyRig();
+  const officeRect = office.getBoundingClientRect();
+  const headRects = workers.map((worker) => worker.querySelector(".head").getBoundingClientRect());
+  const contactX = officeRect.left + officeRect.width / 2;
+  const contactY = (headRects[0].top + headRects[1].top) / 2 + Math.min(headRects[0].height, headRects[1].height) * 1.12;
+
+  synergyRigs = [
+    rigArmToScreenPoint(workers[0], ".arm-back", contactX - 12, contactY + 3, "is-synergy-reaching", 1),
+    rigArmToScreenPoint(workers[1], ".arm-front", contactX + 12, contactY - 3, "is-synergy-reaching", -1),
+  ];
+
+  const knot = document.createElement("div");
+  knot.className = "synergy-knot";
+  knot.style.left = `${contactX - officeRect.left}px`;
+  knot.style.top = `${contactY - officeRect.top}px`;
+  knot.innerHTML = "<i></i><i></i><b>GEMENSAM<br>LEVERANS</b>";
+  chaosLayer.append(knot);
 }
 
 function prepareReviewRig() {
@@ -314,6 +377,14 @@ function spawnOfficeChaos(attackId, variant) {
     stamp.className = "review-stamp";
     stamp.innerHTML = `<span>${["BEHÖVER FÖRBÄTTRAS", "EJ KALIBRERBAR", "POTENTIAL: ARKIVERAD"][variant]}</span><small>People & Culture</small>`;
     chaosLayer.append(stamp);
+    return;
+  }
+
+  if (attackId === "synergy") {
+    const mandate = document.createElement("div");
+    mandate.className = "synergy-mandate";
+    mandate.innerHTML = "<small>TVÅ RESURSER</small><b>EN LEVERANS</b>";
+    chaosLayer.append(mandate);
     return;
   }
 
@@ -464,9 +535,11 @@ function updateHud() {
 
 function resetWorkerState() {
   clearReviewRig();
+  clearSynergyRig();
   clearPrinterRig();
   workers.forEach((worker) => worker.classList.remove("is-attacker", "is-target"));
   office.classList.remove("is-review-clinch");
+  office.classList.remove("is-synergy-clinch");
   office.classList.remove("is-sequencing");
   office.classList.remove("is-critical");
   office.removeAttribute("data-attack");
@@ -533,6 +606,12 @@ async function playAttack(attack) {
     prepareReviewRig();
   }
 
+  if (attack.id === "synergy") {
+    office.classList.add("is-synergy-clinch");
+    await wait(pace(760));
+    prepareSynergyRig();
+  }
+
   setPhase("impact");
   const emitImpactDebris = () => {
     spawnParticles(attack.id === "reply" || attack.id === "ai" ? 30 : 18);
@@ -541,6 +620,9 @@ async function playAttack(attack) {
   if (attack.id === "review") {
     setTimeout(() => playImpactSound(attack.id), pace(920));
     setTimeout(emitImpactDebris, pace(980));
+  } else if (attack.id === "synergy") {
+    setTimeout(() => playImpactSound(attack.id), pace(620));
+    setTimeout(emitImpactDebris, pace(690));
   } else if (attack.id === "printer") {
     setTimeout(() => playImpactSound(attack.id), pace(820));
     setTimeout(emitImpactDebris, pace(900));
@@ -553,7 +635,7 @@ async function playAttack(attack) {
   showDamage(outcome.targetDamage, outcome.selfDamage);
   setSpeech(outcome.critical ? "KRITISK FEEDBACK" : outcome.combo ? `COMBO // ${outcome.combo.label}` : "KONSEKVENS", outcome.impact);
 
-  const impactDurations = { management: 2500, ai: 1700, offsite: 1850, printer: 2750, powerpoint: 1450, review: 2550 };
+  const impactDurations = { management: 2500, ai: 1700, offsite: 1850, printer: 2750, powerpoint: 1450, review: 2550, synergy: 2850 };
   const impactDuration = impactDurations[attack.id] ?? 1150;
   const impactReadingDuration = readingPause(outcome.impact, { minimum: 1650, maximum: 2900 });
   await wait(Math.max(pace(impactDuration), impactReadingDuration));
@@ -674,6 +756,7 @@ const skipIntro = launchParams.has("play") || launchParams.has("preview");
 if (skipIntro) startScreen.hidden = true;
 newGame({ hideStart: skipIntro });
 const previewSceneAttack = ATTACKS.find((attack) => attack.id === launchParams.get("preview"));
+const previewPose = launchParams.get("pose");
 if (previewSceneAttack) {
   document.body.classList.add("is-preview");
   locked = true;
@@ -689,6 +772,19 @@ if (previewSceneAttack) {
       office.classList.add("is-impact");
       spawnBlood({ attackId: previewSceneAttack.id, critical: true });
     }, pace(760));
+  } else if (previewSceneAttack.id === "synergy") {
+    office.classList.add("is-synergy-clinch");
+    const showSynergyImpact = () => {
+      prepareSynergyRig();
+      office.classList.add("is-impact");
+      if (previewPose !== "contact") spawnBlood({ attackId: previewSceneAttack.id, critical: true });
+    };
+    if (previewPose === "contact") {
+      office.classList.add("is-preview-contact");
+      requestAnimationFrame(() => requestAnimationFrame(showSynergyImpact));
+    } else {
+      setTimeout(showSynergyImpact, pace(760));
+    }
   } else {
     office.classList.add("is-impact");
     spawnBlood({ attackId: previewSceneAttack.id, critical: true });

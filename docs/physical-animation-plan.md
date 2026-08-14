@@ -63,14 +63,33 @@ and leaving a readable altered silhouette, without reusing the reference gag:
 The printer is the real desk prop and the void is part of each worker's head
 rig. No substitute character or duplicate prop is placed over the scene.
 
+## Vertical slice: Synergy
+
+The third slice turns the old mirrored body bump into a two-character contact
+rig:
+
+1. Both workers jump onto the desk and land close enough to share the frame.
+2. Their inward arms extend from their defined shoulder and elbow anchors.
+3. The two persistent hand nodes meet at one screen-space contact point and
+   lock into an impossible forced handshake.
+4. Both bodies pull against the shared knot in opposite directions before
+   springing apart.
+5. The knot briefly retains the label `GEMENSAM LEVERANS` while both original
+   arms disappear back into their base sleeves for recovery.
+
+The decorative knot is drawn behind the workers. It reinforces the contact but
+does not supply any extra limbs; the visible hands and sleeves remain the two
+characters' real SVG parts. `?preview=synergy&pose=contact` freezes the clean
+contact pose for future desktop and mobile regression screenshots.
+
 ## Next candidates
 
 1. `HR POLICY CANNON`: handbook opens physically, pages wrap around the target
    as restraints, then paragraph 47 launches them sideways.
-2. `SYNERGI`: both workers reach across the desk, collide foreheads and become
-   briefly tangled in an impossible handshake.
-3. `POWERPOINT TRANSCENDENCE`: attacker folds the target limb by limb into a
+2. `POWERPOINT TRANSCENDENCE`: attacker folds the target limb by limb into a
    living pie chart before the slide frame snaps shut.
+3. `REPLY ALL`: the actual laptop lids clap shut on both workers' ties and drag
+   them through an expanding chain of mail windows.
 
 ## Acceptance checks
 
